@@ -21,7 +21,7 @@ sr.setModel("edsr", 5)
 
 detector = MTCNN()
 
-cap = cv2.VideoCapture("./datasets/video 2.mp4")
+cap = cv2.VideoCapture("../datasets/video 2.mp4")
 
 #cap = cv2.VideoCapture(0)
 
@@ -57,7 +57,8 @@ while ret:
 
             if x > 0 and y > 0:
               #display resulting frame
-              cv2.imshow('frame', frame)
+              cv2.imshow('', frame)
+              cv2.waitKey(0)
           
               # Upscale the image
               result = sr.upsample(frame)
