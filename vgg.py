@@ -21,7 +21,7 @@ def layer_adder(bottom_model, num_classes):
 
 
 if __name__ == "__main__":
-  img_rows, img_cols = 150, 150 
+  img_rows, img_cols = 224, 224 
 
   model = vgg16.VGG16(weights="imagenet",
                     include_top=False,
@@ -97,5 +97,4 @@ if __name__ == "__main__":
     epochs = epochs,
     callbacks=callbacks,
     validation_data=validation_generator)
-
 

@@ -8,10 +8,15 @@ import numpy as np
 from os import listdir
 from os.path import isfile, join
 
+
+stored_dict = {"[0]": "x", "[1]": "y", "[2]": "z"}
+
+stored_dict_n = {"[0]": "x", "[1]": "y", "[2]": "z"}
+
 def draw_test(name, pred, im):
   face = stored_dict[str(pred)]
   BLACK = [0, 0, 0]
-  expanded_image = cv2.copyMakeBorder(im, 80, 0, 0, 100, cv2.BORDER_CONSTANT, value=VLACK)
+  expanded_image = cv2.copyMakeBorder(im, 80, 0, 0, 100, cv2.BORDER_CONSTANT, value=BLACK)
   cv2.putText(expanded_image, face, (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
   cv2.imshow(name, expanded_image)
 
@@ -37,12 +42,13 @@ for i in range(0, 10):
 
   input_im = cv2.resize(input_im, (224, 224), interpolation=cv2.INTER_LINEAR)
   input_im = input_im / 255.
-  input_im = input_im.reshape(0, 150, 150, 3)
+
+  input_im = input_im.reshape(1, 224, 224, 3)
 
   res = np.argmax(classifier.predict(input_im, 1, verbose=0), axis=1)
 
   draw_test("Prediction", res, input_original)
-  cv2.waitKey(0)
+  print("waitKey = ", cv2.waitKey(0))
 
 cv2.destroyAllWindows()
 

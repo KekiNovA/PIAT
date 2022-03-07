@@ -57,8 +57,8 @@ while ret:
 
             if x > 0 and y > 0:
               #display resulting frame
-              cv2.imshow('', frame)
-              cv2.waitKey(0)
+              #cv2.imshow('', frame)
+              #cv2.waitKey(0)
           
               # Upscale the image
               result = sr.upsample(frame)
