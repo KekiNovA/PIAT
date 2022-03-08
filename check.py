@@ -9,9 +9,9 @@ from os import listdir
 from os.path import isfile, join
 
 
-stored_dict = {"[0]": "x", "[1]": "y", "[2]": "z"}
+stored_dict = {"[0]": "person0", "[1]": "person1"}
 
-stored_dict_n = {"[0]": "x", "[1]": "y", "[2]": "z"}
+stored_dict_n = {"[0]": "person0", "[1]": "person1"}
 
 def draw_test(name, pred, im):
   face = stored_dict[str(pred)]
@@ -40,15 +40,16 @@ for i in range(0, 10):
   input_original = input_im.copy()
   input_original = cv2.resize(input_original, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
 
-  input_im = cv2.resize(input_im, (224, 224), interpolation=cv2.INTER_LINEAR)
+  input_im = cv2.resize(input_im, (150, 150), interpolation=cv2.INTER_LINEAR)
   input_im = input_im / 255.
 
-  input_im = input_im.reshape(1, 224, 224, 3)
+  input_im = input_im.reshape(1, 150, 150, 3)
 
   res = np.argmax(classifier.predict(input_im, 1, verbose=0), axis=1)
+
+  print(res)
 
   draw_test("Prediction", res, input_original)
   print("waitKey = ", cv2.waitKey(0))
 
 cv2.destroyAllWindows()
-

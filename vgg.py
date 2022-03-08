@@ -1,17 +1,17 @@
-import cv2
 from keras.applications import vgg16
+from tensorflow.keras import layers, models
 
-from keras.models import Sequential, Model
+from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten, GlobalAveragePooling2D
 from keras.layers import Conv2D, MaxPooling2D, ZeroPadding2D
 from tensorflow.keras.layers import BatchNormalization
+from keras.models import Model
 
 from tensorflow.keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, EarlyStopping
-
 from keras.preprocessing.image import ImageDataGenerator
 
-def layer_adder(bottom_model, num_classes):
+def add_layer(bottom_model, num_classes):
   top_model = bottom_model.output
   top_model = GlobalAveragePooling2D()(top_model)
   top_model = Dense(1024, activation="relu")(top_model)
@@ -21,39 +21,36 @@ def layer_adder(bottom_model, num_classes):
 
 
 if __name__ == "__main__":
-  img_rows, img_cols = 224, 224 
+  img_rows = 150; img_cols = 150
 
-  model = vgg16.VGG16(weights="imagenet",
-                    include_top=False,
-                    input_shape=(img_rows, img_cols, 3))
+  model = vgg16.VGG16(weights = 'imagenet',
+                      include_top = False,
+                      input_shape = (img_rows, img_cols, 3))
 
   for layer in model.layers:
     layer.trainable = False
 
-  num_classes = 4
+  # What exactly is this ?  
+  num_classes = 2
 
-  FC_Head = layer_adder(model, num_classes)
+  FC_Head = add_layer(model, num_classes) 
 
-  model = Model(inputs = model.input, outputs = FC_Head)
-      
+  model = Model(inputs = model.input, outputs=FC_Head)
+
   model.summary()
-
-  #### Augmentation part
 
   train_data_dir = "./train/"
   validation_data_dir = "./test/"
-  
-  # Let's use some data augmentaiton
+
   train_datagen = ImageDataGenerator(
-            rotation_range=45,
-            width_shift_range=0.3,
-            height_shift_range=0.3,
-            horizontal_flip=True,
-            fill_mode='nearest')
+                  rotation_range=45,
+                  width_shift_range=0.3,
+                  height_shift_range=0.3,
+                  horizontal_flip=True,
+                  fill_mode="nearest")
 
   validation_datagen = ImageDataGenerator()
 
-  # set our batch size (typically on most mid tier systems we'LL use 16-32)
   batch_size = 1
 
   train_generator = train_datagen.flow_from_directory(
@@ -67,8 +64,7 @@ if __name__ == "__main__":
         target_size=(img_rows, img_cols),
         batch_size=batch_size,
         class_mode='categorical')
-  ####
-
+  
   checkpoint = ModelCheckpoint("face_detector.h15",
                               monitor="val_loss",
                               mode="min",
@@ -96,5 +92,4 @@ if __name__ == "__main__":
     train_generator,
     epochs = epochs,
     callbacks=callbacks,
-    validation_data=validation_generator)
-
+    validation_data=validation_generator) 
