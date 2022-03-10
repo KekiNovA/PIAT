@@ -17,8 +17,6 @@ from scipy.spatial.distance import cosine
 from keras_vggface.vggface import VGGFace
 from keras_vggface.utils import preprocess_input
 
-
-
 #MTCNN and SuperResolution
 
 sr = dnn_superres.DnnSuperResImpl_create()
@@ -37,18 +35,12 @@ cap = cv2.VideoCapture("./datasets/video 2.mp4")
 
 #cap = cv2.VideoCapture(0)
 
-ret, image = cap.read()
-
-
-fps = cap.get(cv2.CV_CAP_PROP_FPS)
-
-frame_count = 0
 
 #adding given image in dictionary
 frame_dict = dict()
 
-image = cv2.imread("E:\Project\PIAT\datasets\Person 6_var2.jpg")
-result = detector.detect_faces(frame)
+image = cv2.imread("./datasets/Person 6_var2.jpg")
+result = detector.detect_faces(image)
 
 # extract the bounding box from the first face
 x1, y1, width, height = result[0]['box']
@@ -57,9 +49,13 @@ x2, y2 = x1 + width, y1 + height
 face = image[y1:y2, x1:x2]
 # resize pixels to the model size
 image = Image.fromarray(face)
-image = image.resize(required_size)
+image = image.resize((224, 224))
 frame_dict["given_face"] = asarray(image)
 
+# Read video file
+ret, image = cap.read()
+fps = cap.get(cv2.CAP_PROP_FPS)
+frame_count = 0
 
 while ret:
     #Capture frame-by-frame
@@ -85,8 +81,8 @@ while ret:
             if x > 0 and y > 0:          
               # Upscale the image
               result = sr.upsample(frame)
-              time = float(frame_count)/fps
-              frame_dict[time] = result
+              time_stamp = float(frame_count)/fps
+              frame_dict[time_stamp] = result
 
     ret, image = cap.read()
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -113,14 +109,18 @@ def get_embeddings():
     # create a vggface model
     model = VGGFace(model='resnet50', include_top=False, input_shape=(224, 224, 3), pooling='avg')
     # extract faces
+    faces = []
     for key in frame_dict:
-        image = asarray(frame_dict[key], 'float32')
-        # prepare the face for the model, e.g. center pixels
-        image = preprocess_input(image, version=2)
-        # perform prediction
-        frame_dict[key] = model.predict(image)
-        
+        faces.append(extract_face(frame_dict[key]))
 
+    images = asarray(faces, 'float32')
+    # prepare the face for the model, e.g. center pixels
+    images = preprocess_input(images, version=2)
+    # perform prediction
+    predicted_images = model.predict(images)
+    for i in enumerate(frame_dict):
+      frame_dict[i[1]] = predicted_images[i[0]]
+        
 
 # determine if a candidate face is a match for a known face
 def is_match(known_embedding, candidate_embedding, thresh=0.5):
@@ -137,4 +137,4 @@ for key in frame_dict:
     if key == "given_face":
         continue
     elif is_match(frame_dict["given_face"], frame_dict[key]) == True:
-        print(key)
+        print("Timestamp:", key)
